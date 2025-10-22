@@ -25,7 +25,7 @@ A professional vault audit system for Rochester Armored Car that matches scanned
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/vault_audit_redone.git
+git clone https://github.com/VerifiedError/vault_audit_redone.git
 cd vault_audit_redone
 
 # Install dependencies
