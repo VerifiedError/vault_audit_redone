@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, flash
 import os
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from modules.parser.parser import parse_container_file
 from modules.auditor.auditor import VaultAuditor
 from modules.export.exporter import export_audit_results
@@ -10,6 +12,35 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
 app.config['EXPORT_FOLDER'] = os.path.join(os.path.dirname(__file__), 'exports')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'vault-audit-secret-key-change-in-production')
+
+# Flask-Login setup
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+login_manager.login_message = 'Please log in to access the Vault Audit System.'
+
+# User class for authentication
+class User(UserMixin):
+    def __init__(self, id, username):
+        self.id = id
+        self.username = username
+
+# Hardcoded user credentials (hashed password)
+USERS = {
+    'amikkelson': {
+        'id': 1,
+        'username': 'amikkelson',
+        'password_hash': generate_password_hash('ac783d')
+    }
+}
+
+@login_manager.user_loader
+def load_user(user_id):
+    for username, user_data in USERS.items():
+        if str(user_data['id']) == str(user_id):
+            return User(user_data['id'], user_data['username'])
+    return None
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['EXPORT_FOLDER'], exist_ok=True)
@@ -20,11 +51,41 @@ container_data = None
 auditor = None
 last_audit_result = None
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        user_data = USERS.get(username)
+
+        if user_data and check_password_hash(user_data['password_hash'], password):
+            user = User(user_data['id'], user_data['username'])
+            login_user(user, remember=True)
+            next_page = request.args.get('next')
+            return redirect(next_page if next_page else url_for('index'))
+        else:
+            flash('Invalid username or password', 'error')
+
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out successfully.', 'success')
+    return redirect(url_for('login'))
+
 @app.route('/')
+@login_required
 def index():
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
+@login_required
 def upload_file():
     global container_data, auditor
 
@@ -63,6 +124,7 @@ def upload_file():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/audit', methods=['POST'])
+@login_required
 def audit():
     global auditor, last_audit_result
 
@@ -112,6 +174,7 @@ def audit():
     })
 
 @app.route('/export', methods=['GET'])
+@login_required
 def export():
     global last_audit_result, container_data
 
@@ -159,6 +222,7 @@ def export():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/bags/<label_id>', methods=['GET'])
+@login_required
 def get_bag(label_id):
     try:
         bag = db_manager.get_bag_by_label(label_id)
@@ -169,6 +233,7 @@ def get_bag(label_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/bags', methods=['GET'])
+@login_required
 def get_all_bags():
     try:
         limit = request.args.get('limit', type=int)
@@ -179,6 +244,7 @@ def get_all_bags():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/bags/location/<location>', methods=['GET'])
+@login_required
 def get_bags_by_location(location):
     try:
         bags = db_manager.get_bags_by_location(location)
@@ -187,6 +253,7 @@ def get_bags_by_location(location):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/bags/<label_id>', methods=['DELETE'])
+@login_required
 def delete_bag(label_id):
     try:
         success = db_manager.delete_bag(label_id)
