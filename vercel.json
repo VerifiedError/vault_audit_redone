@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "vault_audit/app.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "vault_audit/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "vault_audit/app.py"
+    }
+  ],
+  "env": {
+    "FLASK_ENV": "production"
+  }
+}

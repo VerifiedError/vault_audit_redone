@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vault Audit System - Rochester Armored Car</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Titillium+Web:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Rochester Brand Colors - Per Brand Style Guide */
+            --primary-dark: #233947;
+            --primary-gray: #909095;
+            --accent-navy: #2a3887;
+            --accent-blue: #448ccb;
+            --accent-red: #ed1c24;
+            --accent-gold: #f5bc0e;
+
+            /* Light mode colors */
+            --bg-gradient-start: #f8f9fa;
+            --bg-gradient-end: #e9ecef;
+            --card-bg: #ffffff;
+            --text-primary: #233947;
+            --text-secondary: #909095;
+            --text-tertiary: #6b7280;
+            --border-color: #e5e7eb;
+            --input-bg: #ffffff;
+            --section-bg: #f8f9fa;
+            --hover-bg: #f3f4f6;
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient-start: #1a202c;
+            --bg-gradient-end: #0f1419;
+            --card-bg: #2d3748;
+            --text-primary: #f7fafc;
+            --text-secondary: #cbd5e0;
+            --text-tertiary: #a0aec0;
+            --border-color: #4a5568;
+            --input-bg: #1a202c;
+            --section-bg: #1a202c;
+            --hover-bg: #4a5568;
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Titillium Web', sans-serif;
+        }
+
+        /* Tooltip styles */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+
+        [data-tooltip]::before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-8px);
+            padding: 8px 12px;
+            background-color: #233947;
+            color: white;
+            font-size: 13px;
+            font-weight: 400;
+            line-height: 1.4;
+            white-space: nowrap;
+            border-radius: 6px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        [data-tooltip]::after {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-2px);
+            border: 6px solid transparent;
+            border-top-color: #233947;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            z-index: 1000;
+        }
+
+        [data-tooltip]:hover::before,
+        [data-tooltip]:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Multi-line tooltips */
+        [data-tooltip-multiline]::before {
+            white-space: normal;
+            max-width: 250px;
+            text-align: center;
+        }
+
+        /* Override help cursor for input fields */
+        input[data-tooltip],
+        textarea[data-tooltip] {
+            cursor: text;
+        }
+
+        /* Themed input text color */
+        input.themed-input-bg,
+        textarea.themed-input-bg {
+            color: var(--text-primary);
+        }
+
+        /* Card shadows */
+        .card {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        [data-theme="dark"] .card {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="dark"] .card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Button hover effects */
+        button {
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(42, 56, 135, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* Input focus states */
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #2a3887;
+            box-shadow: 0 0 0 3px rgba(42, 56, 135, 0.1);
+        }
+
+        /* Enhanced focus state for scan input */
+        #individualLabelInput:focus {
+            border-color: #448ccb;
+            box-shadow: 0 0 0 4px rgba(68, 140, 203, 0.3), 0 0 20px rgba(68, 140, 203, 0.2);
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                box-shadow: 0 0 0 4px rgba(68, 140, 203, 0.3), 0 0 20px rgba(68, 140, 203, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 0 4px rgba(68, 140, 203, 0.5), 0 0 25px rgba(68, 140, 203, 0.4);
+            }
+        }
+
+        /* Active scan indicator */
+        .scan-status-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f5f9ff 100%);
+            border: 2px solid #448ccb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #448ccb;
+            margin-bottom: 12px;
+        }
+
+        .scan-status-indicator.active {
+            display: flex;
+        }
+
+        .scan-status-indicator .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #448ccb;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.3);
+            }
+        }
+
+        /* Theme-aware elements */
+        .main-card {
+            background-color: var(--card-bg);
+        }
+
+        .themed-text-primary {
+            color: var(--text-primary);
+        }
+
+        .themed-text-secondary {
+            color: var(--text-secondary);
+        }
+
+        .themed-border {
+            border-color: var(--border-color);
+        }
+
+        .themed-input-bg {
+            background-color: var(--input-bg);
+        }
+
+        .themed-section-bg {
+            background-color: var(--section-bg);
+        }
+
+        .themed-hover:hover {
+            background-color: var(--hover-bg);
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Loading animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .loading {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #909095;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #2a3887;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Volume Slider */
+        .volume-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #909095 0%, #909095 50%, #e5e7eb 50%, #e5e7eb 100%);
+            outline: none;
+            transition: background 0.3s;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2a3887;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .volume-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 3px 6px rgba(42, 56, 135, 0.4);
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2a3887;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .volume-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 3px 6px rgba(42, 56, 135, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <div class="main-card rounded-2xl shadow-xl p-8 md:p-12 card relative">
+            <!-- Header with Settings Button -->
+            <div class="flex justify-between items-center mb-10 pb-6 border-b themed-border">
+                <div class="text-center flex-1">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-2 themed-text-primary"
+                        data-tooltip="Rochester Armored Car Container Holdover Audit System">
+                        Rochester Armored Car
+                        <span class="block text-2xl md:text-3xl mt-2 themed-text-secondary" style="font-family: 'Lato', sans-serif; font-weight: 700;">
+                            Vault Audit System
+                        </span>
+                    </h1>
+                    <p class="text-sm themed-text-secondary mt-3"
+                       data-tooltip="Match scanned bag labels against expected containers">
+                        Container Holdover Management
+                    </p>
+                </div>
+                <!-- Header Buttons -->
+                <div class="absolute top-6 right-6 flex gap-2">
+                    <button id="restartBtn" onclick="restartAudit()"
+                            class="p-3 rounded-xl themed-hover themed-text-secondary hidden"
+                            data-tooltip="Restart audit - clear all data and start over">
+                        <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                        </svg>
+                    </button>
+                    <button id="settingsBtn" onclick="openSettings()"
+                            class="p-3 rounded-xl themed-hover themed-text-secondary"
+                            data-tooltip="Open settings to change theme">
+                        <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- File Upload Section -->
+            <div id="uploadSection" class="mb-10">
+                <h2 id="uploadHeader" class="text-2xl font-bold mb-6 text-center themed-text-primary"
+                    data-tooltip="First step: Upload your container holdover Excel file"
+                    style="color: #233947;">
+                    Step 1: Upload Container File
+                </h2>
+                <div id="dropZone"
+                     class="border-2 border-dashed rounded-xl p-10 text-center transition-all duration-300 hover:border-blue-400 themed-section-bg"
+                     style="border-color: #909095;">
+                    <input type="file" id="fileInput" accept=".xlsx" class="hidden">
+                    <svg class="mx-auto mb-4 themed-text-secondary" width="56" height="56" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <button onclick="document.getElementById('fileInput').click()"
+                            class="btn-primary text-white font-bold py-4 px-8 rounded-xl shadow-md"
+                            style="background-color: #2a3887;"
+                            data-tooltip="Drag and drop .xlsx file here or click to browse">
+                        Choose Container File (.xlsx)
+                    </button>
+                    <p class="mt-4 text-sm themed-text-secondary" id="fileName">
+                        No file selected or drag and drop here
+                    </p>
+                </div>
+            </div>
+
+            <!-- Container Info Section -->
+            <div id="containerInfo" class="mb-10 hidden">
+                <h2 class="text-2xl font-bold mb-6 text-center themed-text-primary"
+                    data-tooltip="Information extracted from the uploaded Excel file"
+                    style="color: #233947;">
+                    Container Information
+                </h2>
+                <div class="rounded-xl p-6 border card themed-section-bg" style="border-color: #e5e7eb;">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div data-tooltip="The location where this audit is being performed">
+                            <p class="text-xs font-bold uppercase tracking-wide mb-2" style="color: #909095;">Carrier Location</p>
+                            <p class="font-semibold text-lg themed-text-primary" id="carrierLocation">-</p>
+                        </div>
+                        <div data-tooltip="When the container holdover report was created">
+                            <p class="text-xs font-bold uppercase tracking-wide mb-2" style="color: #909095;">Created At</p>
+                            <p class="font-semibold text-lg themed-text-primary" id="createdAt">-</p>
+                        </div>
+                        <div data-tooltip="Who created the container holdover report">
+                            <p class="text-xs font-bold uppercase tracking-wide mb-2" style="color: #909095;">Created By</p>
+                            <p class="font-semibold text-lg themed-text-primary" id="createdBy">-</p>
+                        </div>
+                    </div>
+                    <div class="border-t pt-6 themed-border">
+                        <div class="flex flex-col md:flex-row justify-center gap-8">
+                            <div class="text-center" data-tooltip="Total number of valid bag labels found in the Excel file">
+                                <p class="text-xs font-bold uppercase tracking-wide mb-2" style="color: #909095;">Total Labels in Onsite</p>
+                                <p class="text-4xl font-bold" style="color: #448ccb;" id="totalLabels">0</p>
+                            </div>
+                            <div id="daysTrackedSection" class="hidden text-center"
+                                 data-tooltip="Number of days this location has been tracked in the database">
+                                <p class="text-xs font-bold uppercase tracking-wide mb-2" style="color: #909095;">Days Tracked</p>
+                                <p class="text-4xl font-bold" style="color: #f5bc0e;" id="daysTracked">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scanning Section -->
+            <div id="scanSection" class="mb-10 hidden">
+                <h2 class="text-2xl font-bold mb-6 text-center themed-text-primary"
+                    data-tooltip="Second step: Scan all bags in the vault"
+                    style="color: #233947;">
+                    Step 2: Scan Bags
+                </h2>
+
+                <!-- Scan Mode Toggle -->
+                <div id="scanModeToggle" class="flex gap-2 mb-6 bg-gray-100 p-1 rounded-xl max-w-md mx-auto">
+                    <button id="bulkScanBtn" onclick="setScanMode('bulk')"
+                            class="flex-1 py-3 px-4 rounded-lg font-bold transition-all duration-200"
+                            style="background-color: transparent; color: #233947;"
+                            data-tooltip="Bulk mode: Paste all scanned labels at once (one per line)">
+                        Bulk Scan
+                    </button>
+                    <button id="individualScanBtn" onclick="setScanMode('individual')"
+                            class="flex-1 py-3 px-4 rounded-lg font-bold transition-all duration-200 text-white shadow-md"
+                            style="background-color: #2a3887;"
+                            data-tooltip="Individual mode: Scan one label at a time with real-time validation">
+                        Individual Scan
+                    </button>
+                </div>
+
+                <!-- Bulk Scan Mode -->
+                <div id="bulkScanMode" class="rounded-xl p-8 border hidden max-w-3xl mx-auto card themed-section-bg"
+                     style="border-color: #e5e7eb;">
+                    <textarea id="scannedLabels" rows="12"
+                              class="w-full border rounded-xl p-4 text-sm font-mono themed-input-bg"
+                              style="border-color: #909095;"
+                              placeholder="Enter scanned labels (one per line)..."
+                              data-tooltip="Paste or type all scanned bag labels here, one label per line"></textarea>
+                    <button onclick="runAudit()"
+                            class="mt-6 w-full btn-primary text-white font-bold py-4 px-8 rounded-xl shadow-lg"
+                            style="background-color: #448ccb;"
+                            data-tooltip="Click to process all scanned labels and generate audit results">
+                        Complete Audit
+                    </button>
+                </div>
+
+                <!-- Individual Scan Mode -->
+                <div id="individualScanMode" class="rounded-2xl p-10 border-2 max-w-4xl mx-auto card themed-section-bg shadow-lg"
+                     style="border-color: #e5e7eb;">
+                    <!-- Scan Status Indicator -->
+                    <div id="scanStatusIndicator" class="scan-status-indicator mb-6">
+                        <div class="pulse-dot"></div>
+                        <span id="scanStatusText" class="text-base font-semibold">🎯 Start Scanning Labels</span>
+                    </div>
+
+                    <div class="flex gap-4 mb-8">
+                        <input type="text" id="individualLabelInput"
+                               class="flex-1 border-2 rounded-xl px-6 py-5 text-lg font-mono themed-input-bg transition-all duration-200 focus:ring-4 focus:ring-blue-200 focus:border-blue-400"
+                               style="border-color: #909095;"
+                               placeholder="Scan or enter label..."
+                               onkeypress="if(event.key === 'Enter') addLabel()"
+                               onfocus="showScanIndicator()"
+                               onblur="hideScanIndicator()"
+                               data-tooltip="Type or scan a bag label, then press Enter or click Add Label">
+                        <button onclick="addLabel()"
+                                class="btn-primary text-white font-bold px-10 py-5 rounded-xl whitespace-nowrap shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105"
+                                style="background-color: #2a3887; min-width: 140px;"
+                                data-tooltip="Add the scanned label to the list">
+                            <span class="text-base">Add Label</span>
+                        </button>
+                    </div>
+
+                    <!-- Scanned Labels List -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-sm uppercase tracking-wide themed-text-primary"
+                                data-tooltip="Labels that have been scanned so far">
+                                Scanned Labels (<span id="scannedCount">0</span>)
+                            </h3>
+                            <button onclick="clearScannedLabels()"
+                                    class="text-xs px-4 py-2 rounded-lg font-bold transition-all duration-200 hover:bg-red-100"
+                                    style="color: #ed1c24;"
+                                    data-tooltip="Remove all scanned labels and start over">
+                                Clear All
+                            </button>
+                        </div>
+                        <div id="scannedLabelsList"
+                             class="themed-input-bg rounded-xl border p-4 max-h-96 overflow-y-auto themed-border">
+                            <p class="text-gray-400 text-sm text-center py-8">No labels scanned yet</p>
+                        </div>
+                    </div>
+
+                    <button onclick="runAudit()"
+                            class="w-full btn-primary text-white font-bold py-4 px-8 rounded-xl shadow-lg"
+                            style="background-color: #448ccb;"
+                            data-tooltip="Click to complete the audit and view results">
+                        Complete Audit
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="hidden">
+                <h2 class="text-2xl font-bold mb-6 text-center themed-text-primary"
+                    data-tooltip="Results of matching scanned labels against expected containers"
+                    style="color: #233947;">
+                    Audit Results
+                </h2>
+
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="rounded-xl p-6 border card"
+                         style="background: linear-gradient(135deg, #e3f2fd 0%, #f5f9ff 100%); border-color: #448ccb;"
+                         data-tooltip-multiline
+                         data-tooltip="Total number of container labels expected at this location">
+                        <p class="text-xs font-bold uppercase tracking-wide mb-2" style="color: #448ccb;" id="totalContainersLabel">Total in Onsite</p>
+                        <p class="text-5xl font-bold" style="color: #448ccb;" id="totalExpected">0</p>
+                    </div>
+                    <div class="rounded-xl p-6 border card"
+                         style="background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%); border-color: #2e7d32;"
+                         data-tooltip-multiline
+                         data-tooltip="Labels found in both the vault physically and in Cirreon system">
+                        <p class="text-xs font-bold uppercase tracking-wide mb-2" style="color: #2e7d32;" id="matchedLabel">✓ Matched</p>
+                        <p class="text-5xl font-bold" style="color: #2e7d32;" id="matchedCount">0</p>
+                    </div>
+                    <div class="rounded-xl p-6 border card"
+                         style="background: linear-gradient(135deg, #ffebee 0%, #fff5f5 100%); border-color: #ed1c24;"
+                         data-tooltip-multiline
+                         data-tooltip="Physical bags found in vault but not in Cirreon onsite system">
+                        <p class="text-xs font-bold uppercase tracking-wide mb-2" style="color: #ed1c24;" id="unmatchedLabel">✗ Unmatched</p>
+                        <p class="text-5xl font-bold" style="color: #ed1c24;" id="unmatchedCount">0</p>
+                    </div>
+                    <div class="rounded-xl p-6 border card"
+                         style="background: linear-gradient(135deg, #f5f7fa 0%, #e8eaf0 100%); border-color: #64748b;"
+                         data-tooltip-multiline
+                         data-tooltip="Bags listed in onsite system but not found physically in vault">
+                        <p class="text-xs font-bold uppercase tracking-wide mb-2" style="color: #64748b;" id="notScannedLabel">⚠ Not Scanned</p>
+                        <p class="text-5xl font-bold" style="color: #334155;" id="notScannedCount">0</p>
+                    </div>
+                </div>
+
+                <!-- Export -->
+                <div class="mb-8 flex justify-end">
+                    <button onclick="exportResults()"
+                            class="btn-primary text-white font-bold py-4 px-8 rounded-xl transition duration-200 flex items-center gap-3 shadow-lg"
+                            style="background-color: #2a3887;"
+                            data-tooltip="Download complete audit report as formatted Excel file with 2 sheets">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Export to Excel
+                    </button>
+                </div>
+
+                <!-- Detailed Lists -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <h3 class="font-bold mb-3 text-sm uppercase tracking-wide flex items-center gap-2"
+                            style="color: #2e7d32;"
+                            data-tooltip="Bags that match between physical vault and Cirreon system">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Matched Labels
+                        </h3>
+                        <div class="rounded-xl p-4 max-h-80 overflow-y-auto border card"
+                             style="background-color: #f1f8f4; border-color: #2e7d32;">
+                            <ul id="matchedList" class="text-sm space-y-2 font-mono"></ul>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold mb-3 text-sm uppercase tracking-wide flex items-center gap-2"
+                            style="color: #ed1c24;"
+                            id="unmatchedTitle"
+                            data-tooltip="Bags found physically but not in the system">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                            Unmatched Labels
+                        </h3>
+                        <div class="rounded-xl p-4 max-h-80 overflow-y-auto border card"
+                             style="background-color: #fff5f5; border-color: #ed1c24;">
+                            <ul id="unmatchedList" class="text-sm space-y-2 font-mono"></ul>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold mb-3 text-sm uppercase tracking-wide flex items-center gap-2"
+                            style="color: #64748b;"
+                            id="notScannedTitle"
+                            data-tooltip="Bags in system but not found in vault (showing first 20)">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            Not Scanned (First 20)
+                        </h3>
+                        <div class="rounded-xl p-4 max-h-80 overflow-y-auto border card"
+                             style="background-color: #f8fafc; border-color: #cbd5e1;">
+                            <ul id="notScannedList" class="text-sm space-y-2 font-mono"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style="z-index: 9999;">
+        <div id="settingsContent" class="main-card rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b themed-border">
+                <h2 class="text-2xl font-bold themed-text-primary"
+                    data-tooltip="Configure application appearance">
+                    Settings
+                </h2>
+                <button onclick="closeSettings()"
+                        class="p-2 rounded-lg themed-hover transition-all duration-200 themed-text-secondary"
+                        data-tooltip="Close settings panel">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Theme Setting -->
+            <div class="mb-6">
+                <h3 class="text-sm font-bold uppercase tracking-wide mb-4 themed-text-primary"
+                    data-tooltip="Choose your preferred color theme">
+                    Appearance
+                </h3>
+                <div class="flex gap-3">
+                    <button id="lightModeBtn" onclick="setTheme('light')"
+                            class="flex-1 py-4 px-6 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2"
+                            style="border-color: #2a3887; background-color: #e3f2fd;"
+                            data-tooltip="Switch to light color scheme">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" style="color: #2a3887;">
+                            <path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-2a7 7 0 1 1 0 14 7 7 0 0 1 0-14zm0-3v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                        </svg>
+                        <span class="font-bold text-sm" style="color: #2a3887;">Light Mode</span>
+                    </button>
+                    <button id="darkModeBtn" onclick="setTheme('dark')"
+                            class="flex-1 py-4 px-6 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2"
+                            style="border-color: #909095; background-color: transparent;"
+                            data-tooltip="Switch to dark color scheme">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24" style="color: #909095;">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                        <span class="font-bold text-sm" style="color: #909095;">Dark Mode</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bulk Scan Setting -->
+            <div class="mb-6 pt-6 border-t themed-border">
+                <h3 class="text-sm font-bold uppercase tracking-wide mb-4 themed-text-primary"
+                    data-tooltip="Control scan mode options">
+                    Scan Options
+                </h3>
+                <div class="flex justify-between items-center p-4 rounded-xl themed-section-bg">
+                    <div>
+                        <p class="font-bold themed-text-primary mb-1"
+                           data-tooltip="Allow users to paste multiple labels at once">
+                            Enable Bulk Scan Mode
+                        </p>
+                        <p class="text-xs themed-text-secondary"
+                           data-tooltip="When disabled, only Individual Scan mode will be available">
+                            Allow pasting multiple labels
+                        </p>
+                    </div>
+                    <label class="toggle-switch" data-tooltip="Toggle bulk scan on/off">
+                        <input type="checkbox" id="bulkScanToggle" onchange="toggleBulkScanMode()" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Audio Volume Settings -->
+            <div class="mb-6 pt-6 border-t themed-border">
+                <h3 class="text-sm font-bold uppercase tracking-wide mb-4 themed-text-primary"
+                    data-tooltip="Adjust scan sound volumes">
+                    Audio Settings
+                </h3>
+
+                <!-- Success Sound Volume -->
+                <div class="mb-6 p-4 rounded-xl themed-section-bg">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <p class="font-bold themed-text-primary mb-1"
+                               data-tooltip="Volume for successful label match sound">
+                                Success Scan Volume
+                            </p>
+                            <p class="text-xs themed-text-secondary"
+                               data-tooltip="Plays when scanned label matches expected labels">
+                                Sound when label is found
+                            </p>
+                        </div>
+                        <span id="successVolumeValue" class="font-bold text-lg" style="color: #2a3887;" data-tooltip="Current volume percentage">50%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="50"
+                           class="volume-slider"
+                           id="successVolumeSlider"
+                           oninput="updateSuccessVolume(this.value)"
+                           data-tooltip="Drag to adjust success sound volume">
+                </div>
+
+                <!-- Invalid Sound Volume -->
+                <div class="p-4 rounded-xl themed-section-bg">
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <p class="font-bold themed-text-primary mb-1"
+                               data-tooltip="Volume for invalid label scan sound">
+                                Invalid Scan Volume
+                            </p>
+                            <p class="text-xs themed-text-secondary"
+                               data-tooltip="Plays when scanned label is not in expected labels">
+                                Sound when label is not found
+                            </p>
+                        </div>
+                        <span id="invalidVolumeValue" class="font-bold text-lg" style="color: #ed1c24;" data-tooltip="Current volume percentage">50%</span>
+                    </div>
+                    <input type="range" min="0" max="100" value="50"
+                           class="volume-slider"
+                           id="invalidVolumeSlider"
+                           oninput="updateInvalidVolume(this.value)"
+                           data-tooltip="Drag to adjust invalid sound volume">
+                </div>
+            </div>
+
+            <div class="pt-4 border-t themed-border">
+                <button onclick="closeSettings()"
+                        class="w-full py-3 px-6 rounded-xl font-bold text-white transition-all duration-200"
+                        style="background-color: #2a3887;"
+                        data-tooltip="Save settings and close">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio elements for scan sounds -->
+    <audio id="successScanSound" preload="auto">
+        <source src="{{ url_for('static', filename='sound/succesful_scan.mp3') }}" type="audio/mpeg">
+    </audio>
+    <audio id="invalidScanSound" preload="auto">
+        <source src="{{ url_for('static', filename='sound/invalid_scan.mp3') }}" type="audio/mpeg">
+    </audio>
+
+    <script>
+        let containerData = null;
+        let scanMode = 'individual';
+        let scannedLabelsArray = [];
+        let scannedLabelsStatus = {};
+
+        // Handle file upload
+        async function handleFileUpload(file) {
+            if (!file) return;
+
+            document.getElementById('fileName').textContent = file.name;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                containerData = data;
+
+                // Save session data
+                saveSession(data, file.name);
+
+                document.getElementById('carrierLocation').textContent = data.carrier_location;
+                document.getElementById('createdAt').textContent = data.created_at;
+                document.getElementById('createdBy').textContent = data.created_by;
+                document.getElementById('totalLabels').textContent = data.total_valid_labels;
+
+                // Hide upload section, show info and scan sections
+                document.getElementById('uploadHeader').classList.add('hidden');
+                document.getElementById('dropZone').classList.add('hidden');
+                document.getElementById('containerInfo').classList.remove('hidden');
+                document.getElementById('scanSection').classList.remove('hidden');
+                document.getElementById('restartBtn').classList.remove('hidden');
+
+                // Scroll to scan section and focus input field
+                setTimeout(() => {
+                    const scanSection = document.getElementById('scanSection');
+                    scanSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    // Focus the individual scan input field
+                    setTimeout(() => {
+                        const inputField = document.getElementById('individualLabelInput');
+                        if (inputField) {
+                            inputField.focus();
+                        }
+                    }, 500); // Wait for scroll to complete
+                }, 100);
+            } catch (error) {
+                alert('Error uploading file: ' + error.message);
+            }
+        }
+
+        // File input change event
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            await handleFileUpload(file);
+        });
+
+        // Drag and drop functionality
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.style.borderColor = '#448ccb';
+            dropZone.style.backgroundColor = '#e3f2fd';
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.style.borderColor = '#909095';
+            dropZone.style.backgroundColor = '';
+        });
+
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.style.borderColor = '#909095';
+            dropZone.style.backgroundColor = '';
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.name.endsWith('.xlsx')) {
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    document.getElementById('fileInput').files = dataTransfer.files;
+                    await handleFileUpload(file);
+                } else {
+                    alert('Please upload a valid Excel file (.xlsx)');
+                }
+            }
+        });
+
+        function setScanMode(mode) {
+            scanMode = mode;
+
+            const bulkBtn = document.getElementById('bulkScanBtn');
+            const individualBtn = document.getElementById('individualScanBtn');
+            const bulkMode = document.getElementById('bulkScanMode');
+            const individualMode = document.getElementById('individualScanMode');
+
+            if (mode === 'bulk') {
+                bulkBtn.className = 'flex-1 py-3 px-4 rounded-lg font-bold transition-all duration-200 shadow-md';
+                bulkBtn.style.backgroundColor = '#2a3887';
+                bulkBtn.style.color = '#ffffff';
+                individualBtn.className = 'flex-1 py-3 px-4 rounded-lg font-bold transition-all duration-200';
+                individualBtn.style.backgroundColor = 'transparent';
+                individualBtn.style.color = '#233947';
+                bulkMode.classList.remove('hidden');
+                individualMode.classList.add('hidden');
+            } else {
+                individualBtn.className = 'flex-1 py-3 px-4 rounded-lg font-bold transition-all duration-200 shadow-md';
+                individualBtn.style.backgroundColor = '#2a3887';
+                individualBtn.style.color = '#ffffff';
+                bulkBtn.className = 'flex-1 py-3 px-4 rounded-lg font-bold transition-all duration-200';
+                bulkBtn.style.backgroundColor = 'transparent';
+                bulkBtn.style.color = '#233947';
+                individualMode.classList.remove('hidden');
+                bulkMode.classList.add('hidden');
+            }
+        }
+
+        function showScanIndicator() {
+            const indicator = document.getElementById('scanStatusIndicator');
+            if (indicator) {
+                indicator.classList.add('active');
+            }
+        }
+
+        function hideScanIndicator() {
+            const indicator = document.getElementById('scanStatusIndicator');
+            if (indicator) {
+                indicator.classList.remove('active');
+            }
+        }
+
+        function addLabel() {
+            const input = document.getElementById('individualLabelInput');
+            const label = input.value.trim();
+
+            if (!label) return;
+
+            // Check if label already scanned
+            if (scannedLabelsArray.includes(label)) {
+                input.value = '';
+                input.focus();
+                return;
+            }
+
+            // Validate label
+            let statusColor = '#909095';
+            let statusText = 'Unknown';
+            let statusIcon = '?';
+
+            if (containerData && containerData.valid_labels) {
+                if (containerData.valid_labels.includes(label)) {
+                    statusColor = '#2e7d32';
+                    statusText = '✓ Found';
+                    statusIcon = '✓';
+
+                    // Play success sound for matched labels
+                    const successSound = document.getElementById('successScanSound');
+                    if (successSound) {
+                        successSound.currentTime = 0; // Reset to start
+                        successSound.play().catch(e => console.log('Audio play failed:', e));
+                    }
+                } else {
+                    statusColor = '#ed1c24';
+                    statusText = '✗ Not Found';
+                    statusIcon = '✗';
+
+                    // Play invalid sound for unmatched labels
+                    const invalidSound = document.getElementById('invalidScanSound');
+                    if (invalidSound) {
+                        invalidSound.currentTime = 0; // Reset to start
+                        invalidSound.play().catch(e => console.log('Audio play failed:', e));
+                    }
+                }
+            }
+
+            scannedLabelsArray.push(label);
+            scannedLabelsStatus[label] = { statusText, statusColor, statusIcon };
+            updateScannedLabelsList();
+            input.value = '';
+            input.focus();
+
+            // Update scan status text after first label
+            if (scannedLabelsArray.length === 1) {
+                const statusText = document.getElementById('scanStatusText');
+                if (statusText) {
+                    statusText.textContent = '🎯 Continue Scanning Labels';
+                }
+            }
+
+            showScanFeedback(label, statusText, statusColor);
+        }
+
+        function showScanFeedback(label, statusText, statusColor) {
+            const feedback = document.createElement('div');
+            feedback.className = 'fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg font-bold text-white transition-opacity duration-300';
+            feedback.style.backgroundColor = statusColor;
+            feedback.style.zIndex = '10000';
+            feedback.textContent = `${label} - ${statusText}`;
+
+            document.body.appendChild(feedback);
+
+            setTimeout(() => {
+                feedback.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(feedback);
+                }, 300);
+            }, 2000);
+        }
+
+        function updateScannedLabelsList() {
+            const listDiv = document.getElementById('scannedLabelsList');
+            const countSpan = document.getElementById('scannedCount');
+
+            countSpan.textContent = scannedLabelsArray.length;
+
+            if (scannedLabelsArray.length === 0) {
+                listDiv.innerHTML = '<p class="text-sm text-center py-8" style="color: #909095;">No labels scanned yet</p>';
+            } else {
+                listDiv.innerHTML = scannedLabelsArray.map((label, idx) => {
+                    const status = scannedLabelsStatus[label] || { statusIcon: '?', statusColor: '#909095' };
+                    return `
+                    <div class="flex justify-between items-center py-3 px-4 rounded-lg mb-2 border transition-all duration-200 hover:shadow-sm themed-input-bg themed-border" data-tooltip="Scan #${idx + 1}: ${status.statusText}">
+                        <div class="flex items-center gap-3 flex-1">
+                            <span class="font-bold text-lg" style="color: ${status.statusColor};">${status.statusIcon}</span>
+                            <span class="font-mono text-sm themed-text-primary">${label}</span>
+                        </div>
+                        <button onclick="removeLabel(${idx})" class="text-xs px-3 py-1 rounded-lg font-bold transition-all duration-200 hover:bg-red-100" style="color: #ed1c24;" data-tooltip="Remove this label from the list">
+                            Remove
+                        </button>
+                    </div>
+                `;
+                }).join('');
+            }
+        }
+
+        function removeLabel(index) {
+            const removedLabel = scannedLabelsArray[index];
+            scannedLabelsArray.splice(index, 1);
+            delete scannedLabelsStatus[removedLabel];
+            updateScannedLabelsList();
+
+            // Reset status text if all labels removed
+            if (scannedLabelsArray.length === 0) {
+                const statusText = document.getElementById('scanStatusText');
+                if (statusText) {
+                    statusText.textContent = '🎯 Start Scanning Labels';
+                }
+            }
+        }
+
+        function clearScannedLabels() {
+            if (scannedLabelsArray.length === 0) return;
+
+            if (confirm('Are you sure you want to clear all scanned labels?')) {
+                scannedLabelsArray = [];
+                scannedLabelsStatus = {};
+                updateScannedLabelsList();
+
+                // Reset status text when cleared
+                const statusText = document.getElementById('scanStatusText');
+                if (statusText) {
+                    statusText.textContent = '🎯 Start Scanning Labels';
+                }
+            }
+        }
+
+        async function runAudit() {
+            // Get all "Complete Audit" buttons and disable them
+            const auditButtons = document.querySelectorAll('button[onclick="runAudit()"]');
+            const originalButtonTexts = [];
+
+            auditButtons.forEach((btn, idx) => {
+                originalButtonTexts[idx] = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = 'Processing...';
+                btn.style.opacity = '0.6';
+                btn.style.cursor = 'not-allowed';
+            });
+
+            // Helper function to re-enable buttons
+            const enableButtons = () => {
+                auditButtons.forEach((btn, idx) => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalButtonTexts[idx];
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                });
+            };
+
+            let scannedLabels = [];
+
+            if (scanMode === 'bulk') {
+                const scannedText = document.getElementById('scannedLabels').value;
+                scannedLabels = scannedText.split('\n').map(l => l.trim()).filter(l => l);
+            } else {
+                scannedLabels = [...scannedLabelsArray];
+            }
+
+            if (scannedLabels.length === 0) {
+                alert('Please scan at least one label');
+                enableButtons();
+                return;
+            }
+
+            try {
+                const response = await fetch('/audit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ scanned_labels: scannedLabels })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    enableButtons();
+                    return;
+                }
+
+                document.getElementById('totalContainersLabel').textContent = `Total in ${containerData.carrier_location} onsite`;
+                document.getElementById('totalExpected').textContent = data.summary.total_containers_in_onsite;
+                document.getElementById('matchedLabel').textContent = `✓ Matched`;
+                document.getElementById('matchedCount').textContent = data.summary.matched_count;
+                document.getElementById('unmatchedLabel').textContent = `✗ Unmatched`;
+                document.getElementById('unmatchedCount').textContent = data.summary.unmatched_count;
+                document.getElementById('notScannedCount').textContent = data.summary.not_scanned_count;
+
+                const matchedList = document.getElementById('matchedList');
+                matchedList.innerHTML = data.matched_labels.map(l => `<li style="color: #2e7d32;" data-tooltip="Found in vault and system">${l}</li>`).join('');
+
+                const unmatchedList = document.getElementById('unmatchedList');
+                unmatchedList.innerHTML = data.unmatched_labels.map(l => `<li style="color: #ed1c24;" data-tooltip="Found in vault but not in system">${l}</li>`).join('');
+
+                const notScannedList = document.getElementById('notScannedList');
+                notScannedList.innerHTML = data.expected_not_scanned.slice(0, 20).map(l => `<li style="color: #475569;" data-tooltip="In system but not found in vault">${l}</li>`).join('');
+
+                // Update days tracked
+                if (data.location_stats) {
+                    document.getElementById('daysTracked').textContent = data.location_stats.total_days_tracked;
+                    document.getElementById('daysTrackedSection').classList.remove('hidden');
+                }
+
+                document.getElementById('resultsSection').classList.remove('hidden');
+                document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+
+                // Re-enable buttons after successful completion
+                enableButtons();
+            } catch (error) {
+                alert('Error running audit: ' + error.message);
+                enableButtons();
+            }
+        }
+
+        async function exportResults() {
+            try {
+                const response = await fetch('/export');
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    alert('Error: ' + (data.error || 'Failed to export'));
+                    return;
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const filename = response.headers.get('Content-Disposition')?.split('filename=')[1] || 'vault_audit_report.xlsx';
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                // Show success message
+                alert(`✅ Export successful!\n\nFile downloaded: ${filename}\n\nCheck your Downloads folder.`);
+            } catch (error) {
+                alert('Error exporting results: ' + error.message);
+            }
+        }
+
+        // Theme management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme, false);
+        }
+
+        function setTheme(theme, save = true) {
+            document.documentElement.setAttribute('data-theme', theme);
+
+            if (save) {
+                localStorage.setItem('theme', theme);
+            }
+
+            const lightBtn = document.getElementById('lightModeBtn');
+            const darkBtn = document.getElementById('darkModeBtn');
+
+            if (theme === 'light') {
+                lightBtn.style.borderColor = '#2a3887';
+                lightBtn.style.backgroundColor = '#e3f2fd';
+                lightBtn.querySelector('svg').style.color = '#2a3887';
+                lightBtn.querySelector('span').style.color = '#2a3887';
+
+                darkBtn.style.borderColor = '#909095';
+                darkBtn.style.backgroundColor = 'transparent';
+                darkBtn.querySelector('svg').style.color = '#909095';
+                darkBtn.querySelector('span').style.color = '#909095';
+            } else {
+                darkBtn.style.borderColor = '#2a3887';
+                darkBtn.style.backgroundColor = '#e3f2fd';
+                darkBtn.querySelector('svg').style.color = '#2a3887';
+                darkBtn.querySelector('span').style.color = '#2a3887';
+
+                lightBtn.style.borderColor = '#909095';
+                lightBtn.style.backgroundColor = 'transparent';
+                lightBtn.querySelector('svg').style.color = '#909095';
+                lightBtn.querySelector('span').style.color = '#909095';
+            }
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('settingsModal').addEventListener('click', (e) => {
+            if (e.target.id === 'settingsModal') {
+                closeSettings();
+            }
+        });
+
+        // Bulk scan toggle management
+        function toggleBulkScanMode() {
+            const toggle = document.getElementById('bulkScanToggle');
+            const isEnabled = toggle.checked;
+
+            localStorage.setItem('bulkScanEnabled', isEnabled);
+            updateBulkScanVisibility();
+        }
+
+        function updateBulkScanVisibility() {
+            const bulkScanEnabled = localStorage.getItem('bulkScanEnabled') !== 'false';
+            const scanModeToggle = document.getElementById('scanModeToggle');
+
+            if (scanModeToggle) {
+                if (bulkScanEnabled) {
+                    scanModeToggle.style.display = '';
+                } else {
+                    scanModeToggle.style.display = 'none';
+                    // If bulk mode is currently active, switch to individual
+                    if (scanMode === 'bulk') {
+                        setScanMode('individual');
+                    }
+                }
+            }
+        }
+
+        function initBulkScanSetting() {
+            const bulkScanEnabled = localStorage.getItem('bulkScanEnabled') !== 'false';
+            const toggle = document.getElementById('bulkScanToggle');
+
+            if (toggle) {
+                toggle.checked = bulkScanEnabled;
+            }
+
+            updateBulkScanVisibility();
+        }
+
+        // Volume control functions
+        function updateSuccessVolume(value) {
+            const volumeValue = document.getElementById('successVolumeValue');
+            const successSound = document.getElementById('successScanSound');
+            const slider = document.getElementById('successVolumeSlider');
+
+            if (volumeValue) volumeValue.textContent = value + '%';
+            if (successSound) successSound.volume = value / 100;
+            if (slider) {
+                const percentage = value;
+                slider.style.background = `linear-gradient(to right, #2a3887 0%, #2a3887 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+            }
+            localStorage.setItem('successVolume', value);
+        }
+
+        function updateInvalidVolume(value) {
+            const volumeValue = document.getElementById('invalidVolumeValue');
+            const invalidSound = document.getElementById('invalidScanSound');
+            const slider = document.getElementById('invalidVolumeSlider');
+
+            if (volumeValue) volumeValue.textContent = value + '%';
+            if (invalidSound) invalidSound.volume = value / 100;
+            if (slider) {
+                const percentage = value;
+                slider.style.background = `linear-gradient(to right, #ed1c24 0%, #ed1c24 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`;
+            }
+            localStorage.setItem('invalidVolume', value);
+        }
+
+        function initVolumeSettings() {
+            const successVolume = localStorage.getItem('successVolume') || '50';
+            const invalidVolume = localStorage.getItem('invalidVolume') || '50';
+
+            updateSuccessVolume(successVolume);
+            updateInvalidVolume(invalidVolume);
+
+            const successSlider = document.getElementById('successVolumeSlider');
+            const invalidSlider = document.getElementById('invalidVolumeSlider');
+
+            if (successSlider) successSlider.value = successVolume;
+            if (invalidSlider) invalidSlider.value = invalidVolume;
+        }
+
+        // Session persistence
+        function saveSession(data, filename) {
+            sessionStorage.setItem('vaultAuditSession', JSON.stringify({
+                containerData: data,
+                filename: filename,
+                timestamp: new Date().toISOString()
+            }));
+        }
+
+        function restoreSession() {
+            const session = sessionStorage.getItem('vaultAuditSession');
+            if (session) {
+                try {
+                    const { containerData: data, filename } = JSON.parse(session);
+
+                    containerData = data;
+                    document.getElementById('fileName').textContent = filename;
+                    document.getElementById('carrierLocation').textContent = data.carrier_location;
+                    document.getElementById('createdAt').textContent = data.created_at;
+                    document.getElementById('createdBy').textContent = data.created_by;
+                    document.getElementById('totalLabels').textContent = data.total_valid_labels;
+
+                    // Hide upload section, show info and scan sections
+                    document.getElementById('uploadHeader').classList.add('hidden');
+                    document.getElementById('dropZone').classList.add('hidden');
+                    document.getElementById('containerInfo').classList.remove('hidden');
+                    document.getElementById('scanSection').classList.remove('hidden');
+                    document.getElementById('restartBtn').classList.remove('hidden');
+
+                    console.log('Session restored successfully');
+                } catch (error) {
+                    console.error('Failed to restore session:', error);
+                }
+            }
+        }
+
+        function restartAudit() {
+            if (confirm('Are you sure you want to restart the audit? All data will be cleared.')) {
+                // Clear session storage
+                sessionStorage.removeItem('vaultAuditSession');
+
+                // Reset all global variables
+                containerData = null;
+                scannedLabelsArray = [];
+                scannedLabelsStatus = {};
+
+                // Reset file input
+                document.getElementById('fileName').textContent = 'No file selected or drag and drop here';
+                document.getElementById('fileInput').value = '';
+
+                // Show upload section, hide other sections
+                document.getElementById('uploadHeader').classList.remove('hidden');
+                document.getElementById('dropZone').classList.remove('hidden');
+                document.getElementById('containerInfo').classList.add('hidden');
+                document.getElementById('scanSection').classList.add('hidden');
+                document.getElementById('resultsSection').classList.add('hidden');
+                document.getElementById('restartBtn').classList.add('hidden');
+
+                // Clear scan inputs
+                document.getElementById('individualLabelInput').value = '';
+                document.getElementById('bulkLabelsInput').value = '';
+
+                // Reset scan status text to initial state
+                const statusText = document.getElementById('scanStatusText');
+                if (statusText) {
+                    statusText.textContent = '🎯 Start Scanning Labels';
+                }
+
+                // Clear scanned labels display
+                updateScannedLabelsList();
+
+                // Clear container info fields
+                document.getElementById('carrierLocation').textContent = '';
+                document.getElementById('createdAt').textContent = '';
+                document.getElementById('createdBy').textContent = '';
+                document.getElementById('totalLabels').textContent = '';
+
+                // Clear results fields
+                document.getElementById('totalExpected').textContent = '0';
+                document.getElementById('matchedCount').textContent = '0';
+                document.getElementById('unmatchedCount').textContent = '0';
+                document.getElementById('notScannedCount').textContent = '0';
+                document.getElementById('matchedList').innerHTML = '';
+                document.getElementById('unmatchedList').innerHTML = '';
+                document.getElementById('notScannedList').innerHTML = '';
+
+                // Hide days tracked section
+                const daysTrackedSection = document.getElementById('daysTrackedSection');
+                if (daysTrackedSection) {
+                    daysTrackedSection.classList.add('hidden');
+                }
+
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Initialize theme and bulk scan setting on page load
+        initTheme();
+        initBulkScanSetting();
+        initVolumeSettings();
+        restoreSession();
+    </script>
+</body>
+</html>

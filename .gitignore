@@ -1,0 +1,92 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Flask
+instance/
+.webassets-cache
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads & Exports
+vault_audit/uploads/*
+!vault_audit/uploads/.gitkeep
+vault_audit/exports/*
+!vault_audit/exports/.gitkeep
+
+# Excel files (except sample)
+*.xlsx
+!container-holdover.xlsx
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+
+# Temp files
+nul
+temp/
+tmp/
+
+# Demo/test files
+demo_sheets/
+*_demo_*
+backdate_demo_scans.py
+test_demo_sheets.py
+generate_demo_sheets.py
+
+# Analysis files
+excel_analysis.json
+analyze_excel.py
+get_sample_data.py
+example.py
+
+# Documentation (keeping CLAUDE.md and README.md)
+IMPLEMENTATION_COMPLETE.md
+IMPORT_TRACKING_GUIDE.md
+todo.md
+container-holdover.md
+
+# Zip archives
+*.zip
+
+# Claude/Playwright
+.claude/
+.playwright-mcp/
